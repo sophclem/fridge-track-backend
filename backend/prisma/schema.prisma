@@ -22,6 +22,50 @@ model User {
   email        String   @unique
   passwordHash String
   createdAt    DateTime @default(now())
+
+  // relations
+  households HouseholdMember[]
+  items      Item[]
+}
+
+model Household {
+  id         String             @id @default(cuid())
+  name       String
+  inviteCode String             @unique
+  createdAt  DateTime           @default(now())
+
+  members HouseholdMember[]
+  items   Item[]
+}
+
+model HouseholdMember {
+  id          String   @id @default(cuid())
+  userId      String
+  householdId String
+  role        String   // "owner" | "member"
+  joinedAt    DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  household Household @relation(fields: [householdId], references: [id])
+
+  @@unique([userId, householdId])
+}
+
+model Item {
+  id          String   @id @default(cuid())
+  householdId String
+  ownerId     String
+  name        String
+  quantity    Float
+  unit        String
+  location    String   // "fridge" | "freezer" | "pantry"
+  expiresAt   DateTime?
+  status      String   // "active" | "consumed" | "discarded"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id])
+  owner     User      @relation(fields: [ownerId], references: [id])
 }
 
 
